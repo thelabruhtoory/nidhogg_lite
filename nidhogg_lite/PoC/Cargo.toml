@@ -1,0 +1,20 @@
+[package]
+name = "PoC"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.6"
+os_info = "*"
+hostname = "*"
+inline-python = "0.8.0"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser", "winnt", "processthreadsapi", "psapi", "winnls"] }
+
+[profile.release]
+lto = true
+opt-level = 'z'
+overflow-checks = false
+debug = false
+panic = "abort"
